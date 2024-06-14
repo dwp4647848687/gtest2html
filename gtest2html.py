@@ -94,9 +94,9 @@ def generate_total_test_summary(xml_testsuites_node):
     total_abs_success_count = total_abs_test_count - total_abs_fail_count - total_abs_disabled_count
     total_execution_time = get_xml_attribute(str, xml_testsuites_node, 'time', 0)
     test_timestamp = get_xml_attribute(str, xml_testsuites_node, 'timestamp', 0)
-    test_project_name = get_xml_attribute(str, xml_testsuites_node, 'project', 'BooleanGuard')
+    test_project_name = get_xml_attribute(str, xml_testsuites_node, 'project', 'None')
     testsuite_name = get_xml_attribute(str, xml_testsuites_node, 'name', 'undefined')
-    test_author = get_xml_attribute(str, xml_testsuites_node, 'author', 'Hank_')
+    test_author = get_xml_attribute(str, xml_testsuites_node, 'author', 'None')
 
     # Print warning for each unknown attribute inside the node testsuites.
     check_for_unkown_attributes(xml_testsuites_node, ['tests', 'failures',
@@ -133,6 +133,7 @@ def generate_total_test_summary(xml_testsuites_node):
 
 def generate_single_testcase_rows(xml_testsuite_node):
     html_single_testcase_rows = ''
+    html_failed_test_links = ''
 
     xml_testcase_nodes = xml_testsuite_node.findall('./testcase')
     if len(xml_testcase_nodes) == 0:
@@ -146,7 +147,6 @@ def generate_single_testcase_rows(xml_testsuite_node):
         test_status = get_xml_attribute(str, xml_testcase_node, 'status', '-undefined-')
         test_classname = get_xml_attribute(str, xml_testcase_node, 'classname', '-undefined-')
         test_tags = get_xml_attribute(str, xml_testcase_node, 'tags', '')
-
         test_icon_name = ''
         test_html_class = 'primary'
         html_error_message_list = ''
@@ -188,6 +188,11 @@ def generate_single_testcase_rows(xml_testsuite_node):
             html_error_message_list = tmpl_error_message_listing.format(
                 html_error_message_items=html_error_message_items
             )
+            
+            html_failed_test_links += tmpl_failed_test_link.format(
+                test_classname=test_classname,
+                test_name=test_name
+            )
 
         # Create the HTML code for this single testcase.
         html_single_testcase_rows += tmpl_single_test_row.format(
@@ -200,11 +205,12 @@ def generate_single_testcase_rows(xml_testsuite_node):
             test_icon_name=test_icon_name,
             test_html_class=test_html_class
         )
-    return html_single_testcase_rows
+    return html_single_testcase_rows, html_failed_test_links
 
 
 def generate_single_test_result_listings(xml_testsuites_node):
     html_single_test_result_listing = ''
+    html_all_failed_test_links = ''
     collected_testsuite_ids = []
 
     # Generate HTML for the single test result listings.
@@ -231,8 +237,11 @@ def generate_single_test_result_listings(xml_testsuites_node):
                                                          'failures',  'disabled', 'time', 'tags'])
 
         # Generate HTML for single test cases.
-        html_single_testcase_rows = generate_single_testcase_rows(xml_testsuite_node)
+        html_single_testcase_rows, html_single_testcase_failed_test_links = generate_single_testcase_rows(xml_testsuite_node)
 
+        if (html_single_testcase_failed_test_links != '') :
+            html_all_failed_test_links += html_single_testcase_failed_test_links
+            
         html_testsuites_progress_bars = generate_progress_bars(
             abs_total=testsuite_abs_test_count,
             abs_success=testsuite_abs_success_count,
@@ -257,7 +266,7 @@ def generate_single_test_result_listings(xml_testsuites_node):
 
         html_single_test_result_listing += html_testsuite
 
-    return html_single_test_result_listing, collected_testsuite_ids
+    return html_single_test_result_listing, collected_testsuite_ids, html_all_failed_test_links
 
 
 def generate_test_sidebar(collected_testsuite_ids):
@@ -291,17 +300,22 @@ def generate_html(report_file, destination_file):
             report_file, xml_testsuites_node.tag, 'testsuites'))
         exit(-1)
 
-    html_single_test_result_listing, collected_testsuite_ids = generate_single_test_result_listings(
+    html_single_test_result_listing, collected_testsuite_ids, html_failed_test_links = generate_single_test_result_listings(
         xml_testsuites_node)
 
     test_navbar, total_test_result_progressbars, total_test_result = generate_total_test_summary(
         xml_testsuites_node)
     test_sidebar = generate_test_sidebar(collected_testsuite_ids)
+    
+    failed_tests_summary = tmpl_failed_tests_summary.format(
+        failed_test_links=html_failed_test_links
+    )
 
     html_code = tmpl_main_html.format(
         test_navbar=test_navbar,
         test_sidebar=test_sidebar,
         total_test_result=total_test_result,
+        failed_tests_summary=failed_tests_summary,
         single_test_result_listing=html_single_test_result_listing
     )
 

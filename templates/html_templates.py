@@ -2,6 +2,7 @@
 #   test_navbar                 : The navigation bar.
 #   tmpl_test_sidebar           : The sidebar.
 #   total_test_result           : HTML for total test results.
+#   failed_tests_summary        : HTML for failed tests summary.
 #   single_test_result_listing  : HTML for single test result listing.
 tmpl_main_html = '''
 <!doctype html>
@@ -34,6 +35,8 @@ tmpl_main_html = '''
 
         <main role="main" class="col col-md-8 col-lg-8 mx-auto pt-3">
           {total_test_result}
+
+          {failed_tests_summary}
 
           <h4 id="single_test_results">Single Test Results</h4>
           {single_test_result_listing}
@@ -173,6 +176,21 @@ tmpl_total_test_result = '''
 <!-- Total Test Result End -->
 '''
 
+# Template parameters:
+#   failed_test_links : HTML code with links to failed tests.
+tmpl_failed_tests_summary = '''
+<!-- Failed Tests Summary Begin -->
+<div style="margin-bottom:50px;" class="card" id="summary-failed-tests">
+  <h4 class="card-header">Failed Tests:</h4>
+  <div class="card-body">
+    <ul>
+      {failed_test_links}
+    </ul>
+  </div>
+</div>
+<!-- Failed Tests Summary End -->
+'''
+
 # Template paramters:
 #   html_progress_bars             : HTML code with progress bars to show.
 #   testsuite_name                 : Name of the testsuite.
@@ -251,7 +269,7 @@ tmpl_single_test_result_listing = '''
 #   html_error_message_list    : HTML code with error message list.
 tmpl_single_test_row = '''
 <!-- Single Test Row Begin -->
-<tr class="table-{test_html_class} testcase-row" data-tags="{test_tags}">
+<tr id="{test_classname}::{test_name}"class="table-{test_html_class} testcase-row" data-tags="{test_tags}">
   <th class="text-center testcase-id" scope="row">{test_number}</th>
   <td class="testcase-name">
     {test_classname}::{test_name}<span class="testcase-badges"></span><br>
@@ -280,4 +298,13 @@ tmpl_error_message_listing = '''
 #   error_type    : Error type. Leave empty if type is empty.
 tmpl_error_message_item = '''
 <li>{error_message} {error_type}</li>
+'''
+
+# Template parameters:
+#   test_classname             : The classname of the test.
+#   test_name                  : Name of the test.
+tmpl_failed_test_link = '''
+<li>
+  <a href="#{test_classname}::{test_name}">{test_classname}::{test_name}</a>
+</li>
 '''
