@@ -146,7 +146,8 @@ def generate_single_testcase_rows(xml_testsuite_node):
         test_execution_time = get_xml_attribute(str, xml_testcase_node, 'time', '-undefined-')
         test_status = get_xml_attribute(str, xml_testcase_node, 'status', '-undefined-')
         test_classname = get_xml_attribute(str, xml_testcase_node, 'classname', '-undefined-')
-        test_tags = get_xml_attribute(str, xml_testcase_node, 'tags', '')
+        # test_tags = get_xml_attribute(str, xml_testcase_node, 'tags', '')
+        test_tags = ''
         test_icon_name = ''
         test_html_class = 'primary'
         html_error_message_list = ''
@@ -230,7 +231,8 @@ def generate_single_test_result_listings(xml_testsuites_node):
             testsuite_abs_fails_count - testsuite_abs_disabled_count
         testsuite_execution_time = get_xml_attribute(
             str, xml_testsuite_node, 'time', '-undefined-')
-        testsuite_tags = get_xml_attribute(str, xml_testsuite_node, 'tags', '')
+        # testsuite_tags = get_xml_attribute(str, xml_testsuite_node, 'tags', '')
+        testsuite_tags = ''
 
         # Print warning for each unknown attribute inside the node testsuite.
         check_for_unkown_attributes(xml_testsuite_node, ['name', 'tests',
